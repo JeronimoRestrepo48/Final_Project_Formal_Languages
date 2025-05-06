@@ -75,3 +75,32 @@ class Grammar:
     def get_non_terminals(self):
         """Devuelve la lista de no terminales."""
         return list(self.non_terminals)
+     
+    def get_augmented_grammar(self):
+        """
+        Construye y devuelve una gramática aumentada:
+        - Nuevo símbolo inicial S' -> S
+        - Copia de las producciones originales
+        """
+        # Generar un nuevo símbolo inicial único (S', S'', ...)
+        new_start = self.start_symbol + "'"
+        while new_start in self.non_terminals:
+            new_start += "'"
+        # Agrupar producciones: la nueva y luego las originales
+        augmented = {
+            new_start: [self.start_symbol],
+            **self.productions.copy()
+        }
+        # Crear instancia de gramática aumentada
+        g = Grammar()
+        g.start_symbol = new_start
+        g.productions = augmented
+        # Rellenar terminales y no terminales en la nueva gramática
+        for lhs, rhss in augmented.items():
+            for rhs in rhss:
+                for sym in rhs:
+                    if sym.isupper():
+                        g.non_terminals.add(sym)
+                    elif sym != 'e':
+                        g.terminals.add(sym)
+        return g
