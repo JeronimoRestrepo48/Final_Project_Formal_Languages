@@ -29,3 +29,38 @@ class Grammar:
         self.terminals = set()       # Conjunto de símbolos terminales
         self.non_terminals = set()   # Conjunto de símbolos no terminales
         self.start_symbol = 'S'      # Símbolo inicial por defecto
+    
+    def add_production(self, line):
+        """
+        Parsea una línea "A -> α β ..." y la añade a self.productions.
+        También actualiza terminales y no terminales.
+        """
+        lhs, rhs_str = line.split('->')
+        lhs = lhs.strip()                # No terminal a la izquierda
+        rhs_list = rhs_str.strip().split()  # Lista de alternativas
+
+        # Inicializar lista de producciones para lhs si no existe
+        if lhs not in self.productions:
+            self.productions[lhs] = []
+        # Añadir cada alternativa (como cadena) al diccionario
+        self.productions[lhs].extend(rhs_list)
+
+        # Registrar lhs como no terminal
+        self.non_terminals.add(lhs)
+
+        # Recorrer cada producción para clasificar símbolos
+        for prod in rhs_list:
+            for sym in prod:
+                if sym == 'e':
+                    # 'e' representa epsilon; no es terminal
+                    continue
+                elif sym.isupper():
+                    # Letras mayúsculas son no terminales
+                    self.non_terminals.add(sym)
+                else:
+                    # Resto de caracteres son terminales
+                    self.terminals.add(sym)
+
+        # Epsilon y marcador de fin '$' no son terminales
+        self.terminals.discard('e')
+        self.terminals.discard('$')
