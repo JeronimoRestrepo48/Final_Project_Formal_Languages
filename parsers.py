@@ -104,3 +104,50 @@ class Grammar:
                     elif sym != 'e':
                         g.terminals.add(sym)
         return g
+     
+# ====================== FIRST Y FOLLOW ======================
+def compute_first(grammar):
+    """
+    Calcula el conjunto FIRST para cada no terminal de la gramática.
+    Returns: dict nt -> set de terminales (y 'e' si puede producir epsilon)
+    """
+    # Inicializar FIRST(nt) = ∅ para cada no terminal
+    first = {nt: set() for nt in grammar.get_non_terminals()}
+    changed = True
+
+    # Iterar hasta estabilizar los conjuntos
+    while changed:
+        changed = False
+        # Para cada producción A -> α
+        for A, rhss in grammar.productions.items():
+            for rhs in rhss:
+                # Recorrer símbolos en α de izquierda a derecha
+                for i, sym in enumerate(rhs):
+                    if sym == 'e':
+                        # Epsilon en RHS => FIRST(A) incluye 'e'
+                        if 'e' not in first[A]:
+                            first[A].add('e')
+                            changed = True
+                        break
+                    elif not sym.isupper():
+                        # Terminal => FIRST(A) incluye sym
+                        if sym not in first[A]:
+                            first[A].add(sym)
+                            changed = True
+                        break
+                    else:
+                        # No terminal B => FIRST(A) incluye FIRST(B) \ {e}
+                        for t in first[sym]:
+                            if t != 'e' and t not in first[A]:
+                                first[A].add(t)
+                                changed = True
+                        # Si FIRST(B) no contiene ε, detenerse
+                        if 'e' not in first[sym]:
+                            break
+                        # Si llegamos al final y todos generan ε
+                        if i == len(rhs) - 1:
+                            if 'e' not in first[A]:
+                                first[A].add('e')
+                                changed = True
+    return first
+
