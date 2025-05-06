@@ -64,3 +64,14 @@ class Grammar:
         # Epsilon y marcador de fin '$' no son terminales
         self.terminals.discard('e')
         self.terminals.discard('$')
+    def get_productions(self):
+        """Devuelve el diccionario de producciones."""
+        return self.productions
+
+    def get_terminals(self):
+        """Devuelve la lista de terminales."""
+        return list(self.terminals)
+
+    def get_non_terminals(self):
+        """Devuelve la lista de no terminales."""
+        return list(self.non_terminals)
