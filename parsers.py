@@ -151,3 +151,58 @@ def compute_first(grammar):
                                 changed = True
     return first
 
+def compute_follow(grammar, first):
+    """
+    Calcula el conjunto FOLLOW para cada no terminal.
+    Parámetros:
+     - grammar: instancia Grammar
+     - first: diccionario FIRST calculado previamente
+    Returns: dict nt -> set de terminales (y '$' para el inicial)
+    """
+    # Inicializar FOLLOW(nt) = ∅ para cada no terminal
+    follow = {nt: set() for nt in grammar.get_non_terminals()}
+    # El símbolo inicial contiene '$' en su FOLLOW
+    follow[grammar.start_symbol].add('$')
+    changed = True
+
+    # Iterar hasta estabilizar
+    while changed:
+        changed = False
+        # Para cada producción A -> α
+        for A, rhss in grammar.productions.items():
+            for rhs in rhss:
+                # Recorrer cada posición B en α
+                for i, B in enumerate(rhs):
+                    if B in grammar.non_terminals:
+                        # Obtener la "restante" después de B
+                        rest = rhs[i+1:]
+                        has_eps = True
+                        # Recorrer cada símbolo X tras B
+                        for X in rest:
+                            if X == 'e':
+                                continue
+                            if not X.isupper():
+                                # X terminal => FOLLOW(B) incluye X
+                                if X not in follow[B]:
+                                    follow[B].add(X)
+                                    changed = True
+                                has_eps = False
+                                break
+                            else:
+                                # X no terminal => FOLLOW(B) incluye FIRST(X)\{e}
+                                for t in first[X]:
+                                    if t != 'e' and t not in follow[B]:
+                                        follow[B].add(t)
+                                        changed = True
+                                if 'e' not in first[X]:
+                                    has_eps = False
+                                    break
+                        # Si todos los símbolos a la derecha pueden producir ε
+                        if has_eps:
+                            # FOLLOW(B) incluye FOLLOW(A)
+                            for t in follow[A]:
+                                if t not in follow[B]:
+                                    follow[B].add(t)
+                                    changed = True
+    return follow
+
