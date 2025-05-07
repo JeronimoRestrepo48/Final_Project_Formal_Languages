@@ -206,3 +206,40 @@ def compute_follow(grammar, first):
                                     changed = True
     return follow
 
+# ====================== LL(1) PARSER ======================
+def build_ll1_table(grammar, first, follow):
+    """
+    Construye la tabla LL(1) M[A, a] = producción.
+    Devuelve None si detecta un conflicto.
+    """
+    table = {}
+    for A, rhss in grammar.productions.items():
+        for rhs in rhss:
+            # Calcular FIRST(rhs)
+            first_alpha = set()
+            for sym in rhs:
+                if sym == 'e':
+                    first_alpha.add('e'); break
+                if not sym.isupper():
+                    first_alpha.add(sym); break
+                # Si es no terminal, añadimos FIRST(sym)\{e}
+                for t in first[sym]:
+                    if t != 'e':
+                        first_alpha.add(t)
+                if 'e' not in first[sym]:
+                    break
+            # Para cada terminal t en FIRST(rhs)\{e}, M[A,t]=rhs
+            for t in first_alpha - {'e'}:
+                key = (A, t)
+                if key in table:
+                    return None
+                table[key] = (A, rhs)
+            # Si ε ∈ FIRST(rhs), para cada b ∈ FOLLOW(A), M[A,b]=A->ε
+            if 'e' in first_alpha:
+                for b in follow[A]:
+                    key = (A, b)
+                    if key in table:
+                        return None
+                    table[key] = (A, 'e')
+    return table
+
