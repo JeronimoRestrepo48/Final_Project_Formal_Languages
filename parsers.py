@@ -274,3 +274,41 @@ def validate_string_ll1(s, grammar, table):
         for sym in reversed(rhs):
             stack.append(sym)
     return False
+
+# ====================== SLR(1) PARSER ======================
+
+class LRItem:
+    """
+    Representa un ítem LR(0): A -> α·β
+    dot_pos indica la posición del punto.
+    """
+    def __init__(self, lhs, rhs, dot_pos):
+        self.lhs = lhs            # No terminal A
+        self.rhs = rhs            # Cadena β como RHS
+        self.dot_pos = dot_pos    # Posición del punto
+
+    def next_symbol(self):
+        """Devuelve el símbolo a la derecha del punto, o None."""
+        if self.dot_pos < len(self.rhs):
+            return self.rhs[self.dot_pos]
+        return None
+
+    def is_complete(self):
+        """True si el punto está al final (A -> α·)."""
+        return self.dot_pos == len(self.rhs)
+
+    def advance_dot(self):
+        """Devuelve nuevo ítem con el punto avanzado en uno."""
+        return LRItem(self.lhs, self.rhs, self.dot_pos + 1)
+
+    def __eq__(self, other):
+        return (self.lhs, self.rhs, self.dot_pos) == (other.lhs, other.rhs, other.dot_pos)
+
+    def __hash__(self):
+        return hash((self.lhs, tuple(self.rhs), self.dot_pos))
+
+    def __repr__(self):
+        # Formato: A → α·β
+        before = ''.join(self.rhs[:self.dot_pos])
+        after = ''.join(self.rhs[self.dot_pos:])
+        return f"{self.lhs} → {before}·{after}"
