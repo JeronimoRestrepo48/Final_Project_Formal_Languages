@@ -243,3 +243,34 @@ def build_ll1_table(grammar, first, follow):
                     table[key] = (A, 'e')
     return table
 
+def validate_string_ll1(s, grammar, table):
+    """
+    Valida si la cadena s pertenece al lenguaje usando LL(1).
+    Returns True/False.
+    """
+    # Pila: [$, símbolo inicial]
+    stack = ['$', grammar.start_symbol]
+    # Entrada: lista de símbolos + ['$']
+    input_syms = list(s) + ['$']
+    idx = 0
+
+    while stack:
+        top = stack.pop()
+        cur = input_syms[idx]
+        # Si coincide, avanzar en entrada
+        if top == cur:
+            idx += 1
+            if top == '$':
+                return True
+            continue
+        # Si no coincide, buscar producción en la tabla
+        if (top, cur) not in table:
+            return False
+        _, rhs = table[(top, cur)]
+        # Si producción es ε, solo descartar
+        if rhs == 'e':
+            continue
+        # Apilar RHS al revés
+        for sym in reversed(rhs):
+            stack.append(sym)
+    return False
