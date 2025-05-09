@@ -312,3 +312,23 @@ class LRItem:
         before = ''.join(self.rhs[:self.dot_pos])
         after = ''.join(self.rhs[self.dot_pos:])
         return f"{self.lhs} → {before}·{after}"
+
+def closure(items, grammar, first=None):
+    """
+    Cálculo de cierre LR(0) para un conjunto de ítems.
+    items: lista de LRItem
+    Devuelve: lista de ítems en el cierre.
+    """
+    C = set(items)
+    queue = deque(items)
+    while queue:
+        item = queue.popleft()
+        X = item.next_symbol()
+        # Si X es no terminal y el ítem no está completo
+        if X and X in grammar.non_terminals:
+            for rhs in grammar.productions.get(X, []):
+                nuevo = LRItem(X, rhs, 0)
+                if nuevo not in C:
+                    C.add(nuevo)
+                    queue.append(nuevo)
+    return list(C)
