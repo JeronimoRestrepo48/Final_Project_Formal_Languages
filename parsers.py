@@ -343,3 +343,57 @@ def goto(I, X, grammar):
         if item.next_symbol() == X:
             moved.append(item.advance_dot())
     return closure(moved, grammar)
+
+def build_slr_table(grammar, follow):
+    """
+    Construye las tablas ACTION y GOTO para SLR(1).
+    Devuelve (action_table, goto_table), o (None,None) si hay conflicto.
+    """
+    # Gramática aumentada y estado inicial
+    G_aug = grammar.get_augmented_grammar()
+    start_rhs = G_aug.productions[G_aug.start_symbol][0]
+    start_item = LRItem(G_aug.start_symbol, start_rhs, 0)
+
+    # C = conjunto de estados (ítems) inicial
+    C = [closure([start_item], G_aug)]
+    state_map = {tuple(sorted(C[0], key=str)): 0}
+    transitions = {}
+    action, goto_t = {}, {}
+    queue = deque([0])
+
+    # Construir el autómata LR(0)
+    while queue:
+        i = queue.popleft()
+        I = C[i]
+        for X in list(grammar.non_terminals) + list(grammar.terminals):
+            J = goto(I, X, G_aug)
+            if not J: continue
+            key = tuple(sorted(J, key=str))
+            if key not in state_map:
+                state_map[key] = len(C)
+                C.append(J)
+                queue.append(len(C)-1)
+            j = state_map[key]
+            transitions.setdefault(i, {})[X] = j
+
+        # Rellenar ACTION y GOTO
+        for item in I:
+            if not item.is_complete():
+                a = item.next_symbol()
+                if a in grammar.terminals:
+                    j = transitions[i][a]
+                    if (i, a) in action: return None, None
+                    action[(i,a)] = ('s', j)
+            else:
+                if item.lhs == G_aug.start_symbol:
+                    action[(i,'$')] = ('acc', None)
+                else:
+                    for a in follow[item.lhs]:
+                        if (i,a) in action: return None, None
+                        action[(i,a)] = ('r', (item.lhs, item.rhs))
+        # GOTO en no terminales
+        for A in grammar.non_terminals:
+            if (i, A) in transitions.get(i, {}):
+                goto_t[(i, A)] = transitions[i][A]
+
+    return action, goto_t
