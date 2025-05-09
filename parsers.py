@@ -332,3 +332,14 @@ def closure(items, grammar, first=None):
                     C.add(nuevo)
                     queue.append(nuevo)
     return list(C)
+
+def goto(I, X, grammar):
+    """
+    Función GOTO: lleva el conjunto I al símbolo X.
+    Devuelve el cierre de los ítems resultantes o [].
+    """
+    moved = []
+    for item in I:
+        if item.next_symbol() == X:
+            moved.append(item.advance_dot())
+    return closure(moved, grammar)
