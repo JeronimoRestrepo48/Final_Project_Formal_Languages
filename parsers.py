@@ -397,3 +397,33 @@ def build_slr_table(grammar, follow):
                 goto_t[(i, A)] = transitions[i][A]
 
     return action, goto_t
+
+def validate_string_slr(s, grammar, action, goto_t):
+    """
+    Valida si la cadena s pertenece al lenguaje usando SLR(1).
+    Returns True/False.
+    """
+    stack = [0]                # Pila de estados
+    input_syms = list(s) + ['$']
+    idx = 0
+
+    while True:
+        state = stack[-1]
+        a = input_syms[idx]
+        if (state, a) not in action:
+            return False
+        act, data = action[(state, a)]
+        if act == 's':
+            # shift: apilar estado y avanzar en la entrada
+            stack.append(data)
+            idx += 1
+        elif act == 'r':
+            # reduce: desapilar |β| estados y apilar GOTO
+            A, β = data
+            if β != 'e':
+                for _ in β: stack.pop()
+            state2 = stack[-1]
+            stack.append(goto_t[(state2, A)])
+        else:
+            # accept
+            return True
