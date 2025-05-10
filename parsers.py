@@ -427,3 +427,32 @@ def validate_string_slr(s, grammar, action, goto_t):
         else:
             # accept
             return True
+
+# ====================== PROGRAMA PRINCIPAL ======================
+def main():
+    """
+    Función principal:
+    - Lee número de producciones y producciones desde stdin
+    - Construye gramática, FIRST, FOLLOW, tablas LL1 y SLR1
+    - Determina qué parser usar y valida cadenas
+    """
+    print("Enter the number of productions:")
+    n_line = input().strip()
+    if not n_line.isdigit():
+        print("The first input must be an integer indicating the number of productions.")
+        return
+    n = int(n_line)
+
+    print(f"Enter {n} productions:")
+    grammar = Grammar()
+    for _ in range(n):
+        line = input().strip()
+        if not line:
+            print("Empty production detected.")
+            return
+        try:
+            grammar.add_production(line)
+        except Exception as e:
+            print(f"Invalid grammar format: {e}")
+            return
+
