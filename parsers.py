@@ -506,3 +506,5 @@ def main():
     else:
         print("Grammar is neither LL(1) nor SLR(1).")
 
+if __name__ == "__main__":
+    main()
