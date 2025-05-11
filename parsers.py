@@ -455,4 +455,14 @@ def main():
         except Exception as e:
             print(f"Invalid grammar format: {e}")
             return
+    # Calcular FIRST y FOLLOW
+    first = compute_first(grammar)
+    follow = compute_follow(grammar, first)
+
+    # Construir tablas LL(1) y SLR(1)
+    ll1_table = build_ll1_table(grammar, first, follow)
+    slr_action, slr_goto = build_slr_table(grammar, follow)
+
+    is_ll1  = ll1_table  is not None
+    is_slr1 = slr_action is not None
 
