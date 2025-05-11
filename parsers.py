@@ -466,3 +466,43 @@ def main():
     is_ll1  = ll1_table  is not None
     is_slr1 = slr_action is not None
 
+    # Lógica de interacción según disponibilidad de parsers
+    if is_ll1 and is_slr1:
+        choice = ''
+        while choice != 'Q':
+            print("Select a parser (T=LL(1), B=SLR(1), Q=quit):")
+            choice = input().strip().upper()
+            if choice not in ('T','B','Q'):
+                continue
+            if choice == 'Q':
+                break
+            print("Enter strings to analyze (empty to go back):")
+            while True:
+                s = input().strip()
+                if not s:
+                    break
+                if choice == 'T':
+                    res = validate_string_ll1(s, grammar, ll1_table)
+                else:
+                    res = validate_string_slr(s, grammar, slr_action, slr_goto)
+                print("yes" if res else "no")
+
+    elif is_ll1:
+        print("Grammar is LL(1).")
+        print("Enter strings to analyze (empty to exit):")
+        while True:
+            s = input().strip()
+            if not s: break
+            print("yes" if validate_string_ll1(s, grammar, ll1_table) else "no")
+
+    elif is_slr1:
+        print("Grammar is SLR(1).")
+        print("Enter strings to analyze (empty to exit):")
+        while True:
+            s = input().strip()
+            if not s: break
+            print("yes" if validate_string_slr(s, grammar, slr_action, slr_goto) else "no")
+
+    else:
+        print("Grammar is neither LL(1) nor SLR(1).")
+
